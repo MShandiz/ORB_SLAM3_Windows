@@ -60,46 +60,94 @@ int mono_euroc(int argc, char **argv)
     vTimestampsCam.resize(num_seq);
     nImages.resize(num_seq);
 
-    int tot_images = 0;
-    for (seq = 0; seq<num_seq; seq++)
-    {
-        cout << "Loading images for sequence " << seq << "...";
-        LoadImages(string(argv[(2*seq)+3]) + "/mav0/cam0/data", string(argv[(2*seq)+4]), vstrImageFilenames[seq], vTimestampsCam[seq]);
-        cout << "LOADED!" << endl;
+    //int tot_images = 0;
+    //for (seq = 0; seq<num_seq; seq++)
+    //{
+    //    cout << "Loading images for sequence " << seq << "...";
+    //    LoadImages(string(argv[(2*seq)+3]) + "/mav0/cam0/data", string(argv[(2*seq)+4]), vstrImageFilenames[seq], vTimestampsCam[seq]);
+    //    cout << "LOADED!" << endl;
 
-        nImages[seq] = vstrImageFilenames[seq].size();
-        tot_images += nImages[seq];
-    }
+    //    nImages[seq] = vstrImageFilenames[seq].size();
+    //    tot_images += nImages[seq];
+    //}
 
     // Vector for tracking time statistics
     vector<float> vTimesTrack;
-    vTimesTrack.resize(tot_images);
+    //vTimesTrack.resize(tot_images);
 
-    cout << endl << "-------" << endl;
-    cout.precision(17);
+    //cout << endl << "-------" << endl;
+    //cout.precision(17);
 
     // Create SLAM system. It initializes all system threads and gets ready to process frames.
     ORB_SLAM3::System SLAM(argv[1],argv[2],ORB_SLAM3::System::MONOCULAR, true);
 
-    for (seq = 0; seq<num_seq; seq++)
-    {
+
+
+
+
+
+
+    // Initialize webcam
+    cv::VideoCapture cap(0);  // 0 is the ID for the default webcam
+
+    if (!cap.isOpened()) {
+        cerr << "Error: Unable to open the webcam" << endl;
+        return 1;
+    }
+
+
+
+    for (seq = 0; seq < num_seq; seq++) {
 
         // Main loop
         cv::Mat im;
         int proccIm = 0;
-        for(int ni=0; ni<nImages[seq]; ni++, proccIm++)
-        {
 
-            // Read image from file
-            im = cv::imread(vstrImageFilenames[seq][ni],CV_LOAD_IMAGE_UNCHANGED);
-            double tframe = vTimestampsCam[seq][ni];
+        while (true) {
+            // Capture image from webcam
+            cap >> im;
 
-            if(im.empty())
-            {
-                cerr << endl << "Failed to load image at: "
-                     <<  vstrImageFilenames[seq][ni] << endl;
+            if (im.empty()) {
+                cerr << "Failed to capture image from webcam" << endl;
                 return 1;
             }
+
+            //cv::imshow("Image", im);
+            //cv::waitKey(1);
+
+
+
+            // Get the current timestamp
+            double tframe = static_cast<double>(cv::getTickCount()) / cv::getTickFrequency();
+
+
+
+
+
+
+
+
+
+
+    //for (seq = 0; seq<num_seq; seq++)
+    //{
+
+    //    // Main loop
+    //    cv::Mat im;
+    //    int proccIm = 0;
+    //    for(int ni=0; ni<nImages[seq]; ni++, proccIm++)
+    //    {
+
+    //        // Read image from file
+    //        im = cv::imread(vstrImageFilenames[seq][ni],CV_LOAD_IMAGE_UNCHANGED);
+    //        double tframe = vTimestampsCam[seq][ni];
+
+    //        if(im.empty())
+    //        {
+    //            cerr << endl << "Failed to load image at: "
+    //                 <<  vstrImageFilenames[seq][ni] << endl;
+    //            return 1;
+    //        }
 
     #ifdef COMPILEDWITHC11
             std::chrono::steady_clock::time_point t1 = std::chrono::steady_clock::now();
@@ -119,17 +167,58 @@ int mono_euroc(int argc, char **argv)
 
             double ttrack= std::chrono::duration_cast<std::chrono::duration<double> >(t2 - t1).count();
 
-            vTimesTrack[ni]=ttrack;
 
-            // Wait to load the next frame
-            double T=0;
-            if(ni<nImages[seq]-1)
-                T = vTimestampsCam[seq][ni+1]-tframe;
-            else if(ni>0)
-                T = tframe-vTimestampsCam[seq][ni-1];
 
-            if(ttrack<T)
-                usleep((T-ttrack)*1e6); // 1e6
+
+
+            //vTimesTrack[ni]=ttrack;
+
+            //// Wait to load the next frame
+            //double T=0;
+            //if(ni<nImages[seq]-1)
+            //    T = vTimestampsCam[seq][ni+1]-tframe;
+            //else if(ni>0)
+            //    T = tframe-vTimestampsCam[seq][ni-1];
+
+            //if(ttrack<T)
+            //    usleep((T-ttrack)*1e6); // 1e6
+
+
+
+
+
+
+
+
+
+            vTimesTrack.push_back(ttrack);
+
+
+
+            // Check for user input to close the application (e.g., ESC key)
+            if (cv::waitKey(1) == 27) {  // 27 is the ASCII code for the ESC key
+                cout << "Exiting SLAM system..." << endl;
+                break;
+            }
+
+
+
+
+
+            // Add a small delay to simulate real-time capture (optional)
+            usleep(30000);  // ~30ms (30 FPS)
+
+            //// Optionally add a break condition (e.g., specific number of frames or user input)
+            proccIm++;
+            //if (proccIm >= nImages[seq]) {
+            //    break;
+            //}
+
+
+
+
+
+
         }
 
         if(seq < num_seq - 1)

@@ -14,6 +14,7 @@ int mono_inertial_tum_vi(int argc, char** argv);
 int rgbd_tum(int argc, char** argv);
 // ROS
 // Stereo
+int stereo_my_webcam(int argc, char** argv);
 int stereo_euroc(int argc, char** argv);
 int stereo_kitti(int argc, char** argv);
 int stereo_tum_vi(int argc, char** argv);
@@ -56,6 +57,9 @@ int main(int argc, char** argv)
     }
     // ROS
     // Stereo
+    else if (0 == strcmp(argv[1], "stereo_my_webcam")) {
+        stereo_my_webcam(argc, &argv[1]);
+    }
     else if (0 == strcmp(argv[1], "stereo_euroc")) {
         stereo_euroc(argc, &argv[1]);
     }
@@ -96,6 +100,7 @@ int main(int argc, char** argv)
 
         // Stereo
         printf("\n\nStereo:");
+        printf("\n  stereo_my_webcam path_to_vocabulary path_to_settings path_to_sequence_folder_1 path_to_times_file_1 (path_to_image_folder_2 path_to_times_file_2 ... path_to_image_folder_N path_to_times_file_N) (trajectory_file_name)");
         printf("\n  stereo_euroc path_to_vocabulary path_to_settings path_to_sequence_folder_1 path_to_times_file_1 (path_to_image_folder_2 path_to_times_file_2 ... path_to_image_folder_N path_to_times_file_N) (trajectory_file_name)");
         printf("\n  stereo_kitti path_to_vocabulary path_to_settings path_to_sequence");
         printf("\n  stereo_tum_vi path_to_vocabulary path_to_settings path_to_image_folder1_1 path_to_image_folder2_1 path_to_times_file_1 (path_to_image_folder1_2 path_to_image_folder2_2 path_to_times_file_2 ... path_to_image_folder1_N path_to_image_folder2_N path_to_times_file_N) (trajectory_file_name)");

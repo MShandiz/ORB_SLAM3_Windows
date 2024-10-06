@@ -1,5 +1,5 @@
 set SLAM=x64\Release\slam.exe
-set pathDatasetEuroc=YOUR_DATASET_PATH
+set pathDatasetEuroc=./Datasets/EuRoC
 
 REM ------------------------------------
 REM  Monocular Examples
